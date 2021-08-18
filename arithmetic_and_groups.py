@@ -66,16 +66,25 @@ def confirmation(m="Please confirm: Y/N: -> "):
 
 def create_arithmetic_group(n,op="*"):
     temp = []
-    for x in range(0,n+1):
+    p=n
+    if op == "*":
+        p = p-1
+    for x in range(0,p+1):
         # start row
         row = []
-        for y in range(0,n+1):
+        for y in range(0,p+1):
             if x == 0 and y ==0:
                 row.append(op)
             elif x == 0:
-                row.append(y-1)
+                if op == "*":
+                    row.append(y)
+                else:
+                    row.append(y - 1)
             elif y == 0:
-                row.append(x-1)
+                if op == "*":
+                    row.append(x)
+                else:
+                    row.append(x - 1)
             else:
                 if op=="+":
                     row.append( (row[0]+temp[0][y])%n )
@@ -99,25 +108,49 @@ def get_mod(t):
 
 
 # number index modulus
-def get_mod_power(a,j,n):
+def power_mod(a,j,n):
     v = a
     for i in range(1,j):
         v = (v*a)%n
     return v
 
 
-def get_list_powers(a,n, to_print=True, primitive_root = False):
+def get_mod_power(a,exp,n):
+    binary = "{0:b}".format(exp)
+    str_binary = str(binary)
+    length = len(str_binary)
+    power_list=[a]
+
+    v = a
+    for i in range(1,length):
+        v = v*v%n
+        power_list.append(v)
+
+    c = length -1
+    total_value = 1
+
+    for x in str_binary:
+        if x == "1":
+            total_value = (total_value*power_list[c])%n
+        c-=1
+    return total_value
+
+
+def get_list_powers(a,n, to_print=True, primitive_root = False, print_primtitive_root=True):
     output_set = set()
     for i in range(1,n):
         p=get_mod_power(a,i,n)
+        if p in output_set and primitive_root:
+            return False
         output_set.add(p)
         if to_print:
             output = "{} power {} mod {} = {}".format(a, i,n , p)
             print(output)
     if primitive_root:
         if len(output_set) == totient(n):
-            output = "{} is a primitive root of {}".format(a, n)
-            #print(output)
+            if print_primtitive_root:
+                output = "{} is a primitive root of {}".format(a, n)
+                print(output)
             return True
         else:
             return False
@@ -129,12 +162,12 @@ def get_list_primitive_roots(n):
     t_s = time.time()
     root_set = []
     for i in range(2,n):
-        result = get_list_powers(i,n,False, True)
+        result = get_list_powers(i,n,False, True, False)
         if result:
             root_set.append(i)
     t_f = time.time()
     total = t_f - t_s
-    print(total)
+    print("Time to work out: {}".format(total))
     print(root_set)
     return root_set
 
@@ -154,11 +187,19 @@ def get_coprime_set(n):
     for i in range(1,n):
         if math.gcd(i,n)== 1:
             co_set.append(i)
-    #print(co_set)
     return co_set
 
 def totient(n):
     return len(get_coprime_set(n))
+
+def get_totient_and_co_prime_set(n):
+    temp = get_coprime_set(n)
+    string_temp = [str(int) for int in temp]
+    output =  "Co-prime set: {} {} {} ".format( "{", ",".join(string_temp), "}" )
+    print(output )
+    output = "Totient({})={}".format(n,totient(n) )
+    print(output)
+
 
 def seconds_in_n_years(n):
     s = 60*60*24*365*n*1000
@@ -198,6 +239,7 @@ def alice_bob_options():
         {"a": 8, "b": 13, "g": 5, "p": 23},
         {"a": 801, "b": 57, "g": 285, "p": 997},
         {"a": 1006, "b": 589, "g": 1526, "p": 1951},
+        {"a": 1273, "b": 2017, "g": 1526, "p": 4561}
     ]
     c = 0
     for x in option_list:
@@ -226,6 +268,7 @@ def main():
         "H": "For (a,pwr,n), print list up to pwr ",
         "I": "Alice and Bob - Diffie-Hellman ",
         "J": "Alice and Bob - Diffie-Hellman - Options ",
+        "K": "Get totient and co-prime set for a number",
         "Q":"Quit  :-> "
     }
     while True:
@@ -259,7 +302,7 @@ def main():
             t = get_int_tuple()
             get_list_powers(t[0], t[1], True, True)
         elif choice == "G":
-            n = get_integer("Please enter n: -> ", 0, 2000)
+            n = get_integer("Please enter n: -> ", 0, 5000)
             get_list_primitive_roots(n)
         elif choice == "H":
             t = get_int_tuple("Please enter a,p,n :-> ", 3)
@@ -268,6 +311,9 @@ def main():
             alice_bob()
         elif choice == "J":
             alice_bob_options()
+        elif choice == "K":
+            n = get_integer("Please enter integer n: -> ", 0, 2000)
+            get_totient_and_co_prime_set(n)
         elif choice =="Q":
             if confirmation():
                 break
