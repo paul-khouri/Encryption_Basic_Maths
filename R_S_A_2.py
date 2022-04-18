@@ -7,33 +7,39 @@
 
 
 import math
+from decimal import *
+getcontext().prec=100
 
 # p, q MUST be prime
-# 1019 1229
+# uncomment a p, q
+# and comment out the other
+#p= 23
+#q = 31
+#q = 1229
 #p = 99119
 #q = 99131
-p = 57322081
-q = 42657851
+#p = 57322081
+#q = 42657851
 #p=7216922249
 #q=1917844787
+#p = 11443576439306602211
+#q = 71576491244400381023
+p = 98391773137114388472898079588209381708336043358203
+q = 70401528712933778755874484909703053789592374934061
 
 n = p * q
 totient = (p - 1) * (q - 1)
 
 
 def find_coprime(tot):
-    i = 2
+    i = 4
     while math.gcd(tot, i) != 1:
         i += 1
     # print("done")
     return i
 
 
-def find_d(e, tot):
-    i = 2
-    while (i * e) % tot != 1:
-        i += 1
-    return i
+
 
 # satisfies ax+by = d where d= gcb(a,b)
 # a must be greater than b
@@ -52,7 +58,8 @@ def extended_EA(a, b):
     y_2 = 0
     y_1 = 1
     while b > 0:
-        q = math.floor(a / b)
+        q = Decimal(a)//Decimal(b)
+        #print("{} = {}/{}".format(q,a,b))
         r = a - q * b
         x = x_2 - q * x_1
         y = y_2 - q * y_1
@@ -70,6 +77,7 @@ def extended_EA(a, b):
 
 def get_inverse(a,n):
     d,x,y = extended_EA(n,a)
+    y= int(y)
     if y<0:
         y += n
     test = ( a*y )%n
@@ -77,15 +85,7 @@ def get_inverse(a,n):
     return y
 
 
-# message,e, n
-def get_mod_power(num, power, mod):
-    print("c = {} ^ {} mod {}".format(num, power, mod))
-    temp = num
-    # loop generate result
-    # as python can become inaccurate with large powers
-    for i in range(1, power):
-        temp = (temp % mod * num % mod) % mod
-    return int(temp)
+
 
 
 def compute_mod(a,exp,n):
@@ -128,8 +128,11 @@ print("And compute:  d such that 1< d <totient and ed = 1 mod (totient),d = {}".
 print("Public Key is (n,e), ({},{})".format(n, e))
 print("Private Key is (p,q,d), ({},{},{})".format(p, q, d))
 print()
-
-message = 457505867
+#457505867
+# write your message here
+# message must be less that the mondulus (n)
+# has a safety below to use half the mod.
+message = 8346836836835684
 if message > n:
     message = math.floor(n / 2)
 
